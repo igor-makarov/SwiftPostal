@@ -10,4 +10,4 @@ jobs:
      - run: docker run -v $(pwd):/code igormaka/swift-postal:$CIRCLE_BRANCH bash -c 'cd /code && swift test'
 
      # deploy the image
-     - run: docker push igormaka/swift-postal:$CIRCLE_BRANCH
+    #  - run: docker push igormaka/swift-postal:$CIRCLE_BRANCH
