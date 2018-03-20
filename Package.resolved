@@ -1,0 +1,16 @@
+{
+  "object": {
+    "pins": [
+      {
+        "package": "Clibpostal",
+        "repositoryURL": "https://github.com/igor-makarov/Clibpostal.git",
+        "state": {
+          "branch": "master",
+          "revision": "20a453872cb1d0ba8ea4a691835ff660a3c5edc4",
+          "version": null
+        }
+      }
+    ]
+  },
+  "version": 1
+}
