@@ -7,5 +7,7 @@ jobs:
      # build the application image
      - run: docker build -t igor/swift-postal:$CIRCLE_BRANCH .
 
+     - run: docker run -v $(pwd):/code igor/swift-postal:$CIRCLE_BRANCH bash -c 'cd /code && swift test'
+
      # deploy the image
     #  - run: docker push company/app:$CIRCLE_BRANCH
