@@ -66,7 +66,13 @@ public class Expander {
     
     private func freeLanguagesIfNeeded() {
         guard options.num_languages > 0 else { return }
+        #if swift(>=4.1)
         options.languages.deallocate()
+        #else
+        options.languages.deallocate(capacity: options.num_languages)
+        #endif
+        options.languages = nil
+        options.num_languages = 0
     }
     
     deinit {
