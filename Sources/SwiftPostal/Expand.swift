@@ -8,7 +8,7 @@
 import Clibpostal
 import Foundation
 
-public struct Expander {
+public class Expander {
     private var options = libpostal_get_default_options()
     
     public struct AddressComponents: OptionSet {
@@ -53,20 +53,30 @@ public struct Expander {
             }
         }
         set {
+            freeLanguagesIfNeeded()
             let buffer = UnsafeMutablePointer<UnsafeMutablePointer<Int8>?>.allocate(capacity: newValue.count)
             for i in 0..<newValue.count {
-                buffer.advanced(by: i).pointee = strdup(newValue[i])
+                let str = NSString(string: newValue[i]).utf8String
+                buffer.advanced(by: i).pointee = UnsafeMutablePointer<Int8>(mutating: str)
             }
             options.languages = buffer
             options.num_languages = newValue.count
         }
     }
     
+    private func freeLanguagesIfNeeded() {
+        guard options.num_languages > 0 else { return }
+        options.languages.deallocate()
+    }
+    
+    deinit {
+        freeLanguagesIfNeeded()
+    }
+   
     public var addressComponents: AddressComponents {
         get { return AddressComponents(rawValue: Int16(bitPattern: options.address_components)) }
         set { options.address_components = UInt16(bitPattern: newValue.rawValue) }
     }
-    
     
     // String options
     public var latinASCII: Bool { get { return options.latin_ascii } set { options.latin_ascii = newValue } }
@@ -115,7 +125,7 @@ public struct Expander {
         let ptr = UnsafeMutablePointer<Int8>(mutating: cs)
         guard let expansions = libpostal_expand_address(ptr, options, &num_expansions) else { return [] }
         guard num_expansions > 0 else { return [] }
-        let result = expansions.withMemoryRebound(to: UnsafePointer<UInt8>.self, capacity: num_expansions) { exp -> [String] in
+        let result = expansions.withMemoryRebound(to: UnsafePointer<Int8>.self, capacity: num_expansions) { exp -> [String] in
             var r = [String]()
             for i in 0..<num_expansions {
                 let str = String(cString: exp[i])

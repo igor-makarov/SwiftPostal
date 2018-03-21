@@ -8,14 +8,14 @@ func XCTAssert<T, SeqT>(sequence: SeqT, contains element: T, file: StaticString 
     XCTFail(file: file, line: line)
 }
 
-class SwiftPostalTests: XCTestCase {
+class ExpansionTests: XCTestCase {
     func testExpandUSAddress() {
         let expansions = Expander().expand(address: "781 Franklin Ave Crown Hts Brooklyn NY")
         XCTAssert(sequence: expansions, contains: "781 franklin avenue crown heights brooklyn new york")
     }
     
     func testDedupeEquivalentAddress() {
-        var expander = Expander()
+        let expander = Expander()
         expander.languages = ["en"]
         XCTAssertEqual(expander.languages, ["en"])
         let expansions = Set(expander.expand(address: "30 West Twenty-sixth Street Floor Number 7"/*, {languages: ['en']}*/))
@@ -32,7 +32,7 @@ class SwiftPostalTests: XCTestCase {
         let expansions = Expander().expand(address: "הרצל 8 ראשל״צ")
         XCTAssert(sequence: expansions, contains: "hrzl 8 rsl״z")
     }
-    
+
     static let allTests = [
         ("testExpandUSAddress", testExpandUSAddress),
         ("testDedupeEquivalentAddress", testDedupeEquivalentAddress),

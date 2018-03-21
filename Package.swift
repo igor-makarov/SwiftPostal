@@ -19,5 +19,11 @@ let package = Package(
         .testTarget(
             name: "SwiftPostalTests",
             dependencies: ["SwiftPostal"]),
+        .target(
+            name: "ProfilerHelper",
+            dependencies: [
+                "SwiftPostal",
+                ]
+        ),
     ]
 )
