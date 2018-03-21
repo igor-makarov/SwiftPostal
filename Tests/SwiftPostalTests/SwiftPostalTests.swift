@@ -15,7 +15,7 @@ class ExpansionTests: XCTestCase {
     }
     
     func testDedupeEquivalentAddress() {
-        let expander = Expander()
+        var expander = Expander()
         expander.languages = ["en"]
         XCTAssertEqual(expander.languages, ["en"])
         let expansions = Set(expander.expand(address: "30 West Twenty-sixth Street Floor Number 7"/*, {languages: ['en']}*/))

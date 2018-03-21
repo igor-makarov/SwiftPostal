@@ -8,7 +8,7 @@
 import Clibpostal
 import Foundation
 
-public class Expander {
+public struct Expander {
     private var options = libpostal_get_default_options()
     
     public struct AddressComponents: OptionSet {
@@ -38,6 +38,9 @@ public class Expander {
         static let ALL = AddressComponents(rawValue: ((1 << 16) - 1))
 
     }
+    
+    private var _languages = [String]()
+    private var _languagePointers = [UnsafeMutablePointer<Int8>?]()
 
     // List of language codes
     public var languages: [String] {
@@ -54,29 +57,24 @@ public class Expander {
         }
         set {
             freeLanguagesIfNeeded()
-            let buffer = UnsafeMutablePointer<UnsafeMutablePointer<Int8>?>.allocate(capacity: newValue.count)
-            for i in 0..<newValue.count {
-                let str = NSString(string: newValue[i]).utf8String
-                buffer.advanced(by: i).pointee = UnsafeMutablePointer<Int8>(mutating: str)
+            _languages = newValue
+            _languagePointers = [UnsafeMutablePointer<Int8>?](repeating: nil, count: _languages.count)
+            _languagePointers.withUnsafeMutableBufferPointer { buffer in
+                for i in 0..<_languages.count {
+                    let str = NSString(string: _languages[i]).utf8String
+                    buffer.baseAddress?.advanced(by: i).pointee = UnsafeMutablePointer<Int8>(mutating: str)
+                }
+                options.languages = buffer.baseAddress
+                options.num_languages = newValue.count
             }
-            options.languages = buffer
-            options.num_languages = newValue.count
         }
     }
     
-    private func freeLanguagesIfNeeded() {
-        guard options.num_languages > 0 else { return }
-        #if swift(>=4.1)
-        options.languages.deallocate()
-        #else
-        options.languages.deallocate(capacity: options.num_languages)
-        #endif
+    private mutating func freeLanguagesIfNeeded() {
         options.languages = nil
         options.num_languages = 0
-    }
-    
-    deinit {
-        freeLanguagesIfNeeded()
+        _languages = []
+        _languagePointers = []
     }
    
     public var addressComponents: AddressComponents {

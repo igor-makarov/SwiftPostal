@@ -19,7 +19,7 @@ public func autoreleasepoolShim<Result>(invoking body: () throws -> Result) reth
 let printEveryIteration = 1000
 
 func test(houseNumber: Int) -> TimeInterval {
-    let expander = Expander()
+    var expander = Expander()
     if houseNumber % 1000 > 500 {
         expander.languages = [ "en" ]
     } else {
