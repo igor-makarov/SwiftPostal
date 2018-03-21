@@ -8,40 +8,49 @@
 import Foundation
 import SwiftPostal
 
-extension TimeInterval {
-    init(machTime: UInt64) {
-        var timeBaseInfo = mach_timebase_info_data_t()
-        mach_timebase_info(&timeBaseInfo)
-        let nanoseconds = machTime * UInt64(timeBaseInfo.numer) / UInt64(timeBaseInfo.denom);
-        self.init(Double(nanoseconds) / 1000)
+public func autoreleasepoolShim<Result>(invoking body: () throws -> Result) rethrows -> Result {
+    #if os(Linux)
+    return try body()
+    #else
+    return try autoreleasepool(invoking: body)
+    #endif
+}
+
+let printEveryIteration = 1000
+
+func test(houseNumber: Int) -> TimeInterval {
+    let expander = Expander()
+    if houseNumber % 1000 > 500 {
+        expander.languages = [ "en" ]
+    } else {
+        expander.languages = [ "fr" ]
+    }
+    let date1 = Date()
+    let expansions = expander.expand(address: "V XX Settembre, \(houseNumber)")
+    // uncomment to see everything slow down by over 2000X:
+    // SwiftPostal.cleanup()
+
+    let date2 = Date()
+    if houseNumber % printEveryIteration == 0 {
+        print("Expansions: \(expansions)")
+    }
+    return date2.timeIntervalSince(date1)
+}
+
+func main() {
+    var houseNumber = 1
+    var time: TimeInterval = 0
+    while true {
+        let timed = autoreleasepoolShim {
+            return test(houseNumber: houseNumber)
+        }
+        time += timed
+        let average = time / Double(houseNumber)
+        houseNumber += 1
+        if houseNumber % printEveryIteration == 0 {
+            print("Average: \(average * 1000)ms")
+        }
     }
 }
 
-var i = 1
-var time: TimeInterval = 0
-while true {
-    autoreleasepool {
-        let expander = Expander()
-        if i % 1000 > 500 {
-            expander.languages = [ "en" ]
-        } else {
-            expander.languages = [ "fr" ]
-        }
-        let time1 = mach_absolute_time()
-        let expansions = expander.expand(address: "V XX Settembre, \(i)")
-        let time2 = mach_absolute_time()
-        var average: TimeInterval = 0
-        if i > 100000 {
-            time += TimeInterval(machTime: time2 - time1)
-            average = time / Double(i - 100000)
-        }
-        switch i % 1000 {
-        case 500...501:
-            print("Language: \(expander.languages), expansions: \(expansions), avg time: \(average)")
-        default:
-            break
-        }
-        i += 1
-    }
-}
-
+main()
