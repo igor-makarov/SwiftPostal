@@ -8,7 +8,7 @@
 import Foundation
 import SwiftPostal
 
-let printEveryIteration = 1
+let printEveryIteration = 10000
 
 func test(houseNumber: Int) -> TimeInterval {
     var expander = Expander()
@@ -23,8 +23,8 @@ func test(houseNumber: Int) -> TimeInterval {
     // SwiftPostal.cleanup()
 
     let date2 = Date()
-    if houseNumber % printEveryIteration == 0 {
-        print("Expansions (\(expander.languages)): \(expansions)")
+    if houseNumber % printEveryIteration == 0 || houseNumber % printEveryIteration == 1 {
+        print("Expansions (\(expander.languages.joined(separator: ","))): \(expansions)")
     }
     return date2.timeIntervalSince(date1)
 }
@@ -36,10 +36,10 @@ func main() {
         let timed = test(houseNumber: houseNumber)
         time += timed
         let average = time / Double(houseNumber)
-        houseNumber += 1
-        if houseNumber % printEveryIteration == 0 {
-//            print("Average: \(average * 1000)ms")
+        if houseNumber % printEveryIteration == 0 || houseNumber % printEveryIteration == 1 {
+            print("Average: \(average * 1000)ms, samples: \(houseNumber)")
         }
+        houseNumber += 1
     }
 }
 
