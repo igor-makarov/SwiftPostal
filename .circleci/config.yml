@@ -5,6 +5,6 @@ jobs:
    steps:
      - checkout
      # pull the swift-postal image
-     - run: docker pull igormaka/swift-postal
+     - run: docker pull igormaka/swift-libpostal
 
-     - run: docker run -v $(pwd):/code igormaka/swift-postal bash -c 'cd /code && swift test'
+     - run: docker run -v $(pwd):/code igormaka/swift-libpostal bash -c 'cd /code && swift test'
