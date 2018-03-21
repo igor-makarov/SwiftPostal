@@ -39,41 +39,46 @@ public struct Expander {
 
     }
     
-    private var _languages = [String]()
-    private var _languagePointers = [UnsafeMutablePointer<Int8>?]()
+    private var _languageCStrings = [ContiguousArray<CChar>]()
+    private var _languagePointers = ContiguousArray<UnsafeMutablePointer<Int8>>()
 
     // List of language codes
     public var languages: [String] {
         get {
             guard options.num_languages > 0 else { return [] }
-            return options.languages.withMemoryRebound(to: UnsafePointer<UInt8>.self, capacity: options.num_languages) {
-                var result = [String]()
-                for i in 0..<options.num_languages {
-                    let string = String(cString: $0[i])
-                    result.append(string)
-                }
-                return result
+            let languagesPtr = options.languages!
+            let buffer = UnsafeBufferPointer<UnsafeMutablePointer<CChar>?>(start: languagesPtr, count: options.num_languages)
+            var result = [String]()
+            for i in 0..<options.num_languages {
+                let string = String(cString: buffer[i]!)
+                result.append(string)
             }
+            return result
         }
         set {
             freeLanguagesIfNeeded()
-            _languages = newValue
-            _languagePointers = [UnsafeMutablePointer<Int8>?](repeating: nil, count: _languages.count)
+            guard newValue.count > 0 else { return }
+            _languageCStrings = newValue.map { $0.utf8CString }
+            _languagePointers = ContiguousArray<UnsafeMutablePointer<Int8>>(repeating: UnsafeMutablePointer(mutating: ""), count: _languageCStrings.count)
             _languagePointers.withUnsafeMutableBufferPointer { buffer in
-                for i in 0..<_languages.count {
-                    let str = NSString(string: _languages[i]).utf8String
-                    buffer.baseAddress?.advanced(by: i).pointee = UnsafeMutablePointer<Int8>(mutating: str)
+                for i in 0..<_languageCStrings.count {
+                    _languageCStrings[i].withUnsafeMutableBufferPointer { (buf: inout UnsafeMutableBufferPointer<Int8>) in
+                        buffer.baseAddress!.advanced(by: i).pointee = buf.baseAddress!
+                    }
                 }
-                options.languages = buffer.baseAddress
+                buffer.baseAddress!.withMemoryRebound(to: UnsafeMutablePointer<Int8>?.self, capacity: _languageCStrings.count) {
+                    options.languages = $0
+                }
                 options.num_languages = newValue.count
             }
+
         }
     }
     
     private mutating func freeLanguagesIfNeeded() {
         options.languages = nil
         options.num_languages = 0
-        _languages = []
+        _languageCStrings = []
         _languagePointers = []
     }
    
@@ -125,9 +130,11 @@ public struct Expander {
     
     public func expand(address: String) -> [String] {
         var num_expansions: Int = 0
-        let cs = NSString(string: address).utf8String
-        let ptr = UnsafeMutablePointer<Int8>(mutating: cs)
-        guard let expansions = libpostal_expand_address(ptr, options, &num_expansions) else { return [] }
+        var addressCString = address.utf8CString
+        let addressStrPtr = addressCString.withUnsafeMutableBufferPointer {
+            $0.baseAddress!.withMemoryRebound(to: Int8.self, capacity: 1) { $0 }
+        }
+        guard let expansions = libpostal_expand_address(addressStrPtr, options, &num_expansions) else { return [] }
         guard num_expansions > 0 else { return [] }
         let result = expansions.withMemoryRebound(to: UnsafePointer<Int8>.self, capacity: num_expansions) { exp -> [String] in
             var r = [String]()
