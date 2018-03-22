@@ -6,10 +6,10 @@ let package = Package(
     name: "SwiftPostal",
     products: [
         .executable(
-            name: "SwiftPostal",
+            name: "SwiftPostal.CLI",
             targets: ["SwiftPostal.CLI"]),
         .library(
-            name: "SwiftPostal.Framework",
+            name: "SwiftPostal",
             targets: ["SwiftPostal"]),
         ],
     dependencies: [

@@ -14,4 +14,4 @@ jobs:
       - run: docker run -v $(pwd):/code igormaka/swift-libpostal bash -c 'cd /code && swift test'
 
       # test CLI
-      - run: docker run -v $(pwd):/code igormaka/swift-libpostal bash -c 'cd /code && .build/debug/SwiftPostal expand "20 s rural" | grep "20 san rural"'
+      - run: docker run -v $(pwd):/code igormaka/swift-libpostal bash -c 'cd /code && .build/debug/SwiftPostal.CLI expand "20 s rural" | grep "20 san rural"'
