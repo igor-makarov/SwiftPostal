@@ -1,10 +1,17 @@
 version: 2
 jobs:
  build:
-   machine: true
-   steps:
-     - checkout
-     # pull the swift-postal image
-     - run: docker pull igormaka/swift-libpostal
+    machine: true
+    steps:
+      - checkout
+      # pull the swift-postal image
+      - run: docker pull igormaka/swift-libpostal
 
-     - run: docker run -v $(pwd):/code igormaka/swift-libpostal bash -c 'cd /code && swift test'
+      # build
+      - run: docker run -v $(pwd):/code igormaka/swift-libpostal bash -c 'cd /code && swift build'
+
+      # unit tests
+      - run: docker run -v $(pwd):/code igormaka/swift-libpostal bash -c 'cd /code && swift test'
+
+      # test CLI
+      - run: docker run -v $(pwd):/code igormaka/swift-libpostal bash -c 'cd /code && .build/debug/SwiftPostal expand "20 s rural" | grep "20 san rural"'
