@@ -1,5 +1,5 @@
 import XCTest
-@testable import SwiftPostalTests
+@testable import SwiftPostal_Tests
 
 XCTMain([
     testCase(ExpansionTests.allTests),
