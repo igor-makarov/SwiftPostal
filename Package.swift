@@ -7,9 +7,9 @@ let package = Package(
     products: [
         .executable(
             name: "SwiftPostal",
-            targets: ["CLI"]),
+            targets: ["SwiftPostal.CLI"]),
         .library(
-            name: "SwiftPostalFramework",
+            name: "SwiftPostal.Framework",
             targets: ["SwiftPostal"]),
         ],
     dependencies: [
@@ -18,16 +18,16 @@ let package = Package(
     ],
     targets: [
         .target(name: "SwiftPostal"),
-        .target(name: "CLI",
+        .target(name: "SwiftPostal.CLI",
                 dependencies: [
                     "SwiftPostal",
                     "Commander"
             ]),
-        .target(name: "ProfilerHelper",
+        .target(name: "SwiftPostal.ProfilerHelper",
                 dependencies: [
                     "SwiftPostal"
             ]),
-        .testTarget(name: "SwiftPostalTests",
+        .testTarget(name: "SwiftPostal.Tests",
                     dependencies: [
                         "SwiftPostal"
             ]),
